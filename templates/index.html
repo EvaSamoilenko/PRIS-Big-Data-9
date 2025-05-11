@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Анализ данных с PySpark</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4285f4;
+            --secondary-color: #34a853;
+            --accent-color: #ea4335;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333;
+            --medium-gray: #757575;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: var(--dark-gray);
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            margin-bottom: 40px;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-top: 40px;
+            font-weight: 500;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            margin-top: 25px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .upload-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 15px 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .file-upload-label:hover {
+            background-color: #3367d6;
+        }
+
+        .submit-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            margin-top: 15px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: #2d9249;
+        }
+
+        .dataframe {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9em;
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+        }
+
+        .dataframe th, .dataframe td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .dataframe th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+        }
+
+        .dataframe tr:nth-child(even) {
+            background-color: var(--light-gray);
+        }
+
+        .dataframe tr:hover {
+            background-color: #e8f0fe;
+        }
+
+        .visualization {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 30px 0;
+            box-shadow: var(--box-shadow);
+            text-align: center;
+        }
+
+        .visualization img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--border-radius);
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fff8e1;
+            border-radius: var(--border-radius);
+            color: #ff8f00;
+            font-weight: 500;
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            margin: 30px 0;
+        }
+
+        .accuracy {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: var(--medium-gray);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Мультиклассовая классификация с помощью PySpark</h1>
+            <p>Flask + PySpark + Machine Learning</p>
+        </div>
+    </header>
+
+    <div class="container">
+        {% if show_form %}
+        <div class="card upload-section">
+            <h2>Загрузка данных</h2>
+            <p>Загрузите CSV-файл для анализа и обучения модели</p>
+
+            <form method="post" enctype="multipart/form-data" onsubmit="showLoading()">
+                <div class="file-upload">
+                    <label class="file-upload-label" for="file-input">
+                        📁 Выберите файл
+                    </label>
+                    <input id="file-input" type="file" name="file" required>
+                </div>
+                <button type="submit" class="submit-btn">Загрузить и обучить модель</button>
+            </form>
+
+            <div id="loading">
+                <div class="loading-spinner"></div>
+                <p>Обработка данных и обучение модели... Пожалуйста, подождите.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if schema_info or preview_table %}
+        <div class="card">
+            <h2>Обзор данных</h2>
+
+            {% if schema_info %}
+            <div class="data-section">
+                <h3>Структура датасета</h3>
+                <pre>{{ schema_info }}</pre>
+            </div>
+            {% endif %}
+
+            {% if preview_table %}
+            <div class="data-section">
+                <h3>Первые 10 строк данных</h3>
+                <div style="overflow-x: auto;">
+                    {{ preview_table|safe }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% if corr_plot_url %}
+        <div class="visualization">
+{#            <h3>Корреляционная матрица</h3>#}
+            <img src="{{ corr_plot_url }}" alt="Корреляционная матрица">
+        </div>
+        {% endif %}
+
+        {% if accuracy or cm_plot_url %}
+        <div class="card results">
+            <h2>Результаты модели</h2>
+
+            {% if accuracy %}
+            <div class="accuracy">
+                Точность модели: <span>{{ accuracy }}</span>
+            </div>
+            {% endif %}
+
+            {% if cm_plot_url %}
+            <div class="visualization">
+{#                <h3>Матрица ошибок</h3>#}
+                <img src="{{ cm_plot_url }}" alt="Матрица ошибок">
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Все права защищены</p>
+        </div>
+    </footer>
+
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        // Показываем имя выбранного файла
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Файл не выбран';
+            document.querySelector('.file-upload-label').textContent = fileName;
+        });
+    </script>
+</body>
+</html>
